@@ -1,0 +1,42 @@
+html{
+  font-size: 24px;
+}
+
+body{
+  font-family: monospace;
+  color: white;
+}
+
+h1{
+  font-size: 2rem;
+  color: black;
+}
+
+span{
+  color: black;
+}
+
+#game-area{
+  background-color: #16455D;
+}
+
+#game-map{
+  text-align: center;
+}
+
+.row{
+}
+
+.column{
+  background-color: rgba(255,255,255,0.25);
+  border-top: 2px solid #16455D;
+  border-bottom: 2px solid #16455D;
+  border-left: 2px solid #16455D;
+  border-right: 2px solid #16455D;
+  width: 1.5rem;
+  height: 1.5rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
