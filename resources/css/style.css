@@ -1,5 +1,5 @@
 html{
-  font-size: 24px;
+  font-size: 20px;
 }
 
 body{
@@ -10,10 +10,20 @@ body{
 h1{
   font-size: 2rem;
   color: black;
+  margin-left: .25rem;
+  margin-bottom: 0;
 }
 
 span{
   color: black;
+}
+
+p{
+  margin-bottom: 0;
+}
+
+span {
+  color: white;
 }
 
 #game-area{
@@ -22,13 +32,41 @@ span{
 
 #game-map{
   text-align: center;
+  margin-left: 0px;
+  display: inline;
 }
 
-.row{
+#sidebar {
+  background-color: transparent;
+  border: none;
+  width: 40%;
+  height: auto;
+  text-align: left;
+  display: inline;
+  padding-left: .5rem;
+  font-size: .75rem;
 }
 
-.column{
-  background-color: rgba(255,255,255,0.25);
+#hud {
+  display: flex;
+}
+
+#log {
+  height: 480px;
+  overflow-y: scroll;
+}
+
+.container-fluid {
+  padding: 0;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.column {
+  background-color: rgba(255,255,255,.5);
   border-top: 2px solid #16455D;
   border-bottom: 2px solid #16455D;
   border-left: 2px solid #16455D;
@@ -39,4 +77,13 @@ span{
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.tile {
+  color: #16455D;
+  background-color: #16455D;
+}
+
+.stat {
+  width: 50%;
 }
