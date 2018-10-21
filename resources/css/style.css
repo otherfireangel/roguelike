@@ -18,12 +18,12 @@ span{
   color: black;
 }
 
-p{
-  margin-bottom: 0;
+#sidebar span{
+  color: white;
 }
 
-span {
-  color: white;
+p{
+  margin-bottom: 0;
 }
 
 #game-area{

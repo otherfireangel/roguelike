@@ -18,13 +18,37 @@ $(document).ready(function() {
       var key = event.which;
       you.loc = move(rows, cols, maze, key, you.loc);
       reveal(you.loc[0], you.loc[1], maze);
-      if(maze[you.loc[0]][you.loc[1]].material == "potion") {
-        you.hp += Math.floor(Math.random() * 4) + 1;
+      if(maze[you.loc[0]][you.loc[1]].items.includes("potion")) {
+        you.hp += Math.floor(Math.random() * 1) + 1;
+        if(you.hp > 10){
+          you.hp = 10;
+        }
         statUpdate(you, LV_EXP);
+        let index = maze[you.loc[0]][you.loc[1]].items.indexOf("potion");
+        maze[you.loc[0]][you.loc[1]].items.splice(index, 1);
       }
-      if(maze[you.loc[0]][you.loc[1]].material == "spike") {
+      if(maze[you.loc[0]][you.loc[1]].monsters[0]) {
         you.hp -= Math.floor(Math.random() * 3) + 1;
+        maze[you.loc[0]][you.loc[1]].monsters[0] = false;
+        if(you.hp <= 0){
+          you.hp = 0;
+          $("#row0 .col0").text("G").css("color", "white");
+          $("#row0 .col1").text("A").css("color", "white");
+          $("#row0 .col2").text("M").css("color", "white");
+          $("#row0 .col3").text("E").css("color", "white");
+          $("#row0 .col4").text("");
+          $("#row0 .col5").text("O").css("color", "white");
+          $("#row0 .col6").text("V").css("color", "white");
+          $("#row0 .col7").text("E").css("color", "white");
+          $("#row0 .col8").text("R").css("color", "white");
+          for(let i = 0; i < maze.length; i++){
+            for(let j = 0; j < maze[0].length; j++){
+              $("#row" + i + " .col" + j).addClass("tile").css("border", "none");
+            }
+          }
+        }
         statUpdate(you, LV_EXP);
+        //Update this to do battle
       }
     });
   });
@@ -62,28 +86,32 @@ function boardSetup(rows, cols, maze) {
   for(var a = 0; a < 10; a++) {
     x2 = Math.floor(Math.random() * cols);
     y2 = Math.floor(Math.random() * rows);
-    while(maze[y2][x2].material != "floor"){
+    while($("#row" + y2 + " .col" + x2).text() != ""){
       x2 = Math.floor(Math.random() * cols);
       y2 = Math.floor(Math.random() * rows);
     }
     $("#row" + y2 + " .col" + x2).text("M");
-    maze[y2][x2].material = "spike";
+    maze[y2][x2].monsters[0] = "true";
+    maze[y2][x2].monsters[1].loc = [y2, x2];
+    maze[y2][x2].monsters[1].hp = 5;
+    maze[y2][x2].monsters[1].exp = 2;
+    maze[y2][x2].monsters[1].dmg = 3;
   }
   //puts potions in 10 random divs
   for(var b = 0; b < 10; b++) {
     x3 = Math.floor(Math.random() * cols);
     y3 = Math.floor(Math.random() * rows);
-    while(maze[y3][x3].material != "floor"){
+    while($("#row" + y3 + " .col" + x3).text() != ""){
       x3 = Math.floor(Math.random() * cols);
       y3 = Math.floor(Math.random() * rows);
     }
     $("#row" + y3 + " .col" + x3).text("P");
-    maze[y3][x3].material = "potion";
+    maze[y3][x3].items.push("potion");
   }
   //puts the player in a random div
   x = Math.floor(Math.random() * cols);
   y = Math.floor(Math.random() * rows);
-  while(maze[y][x].material != "floor"){
+  while($("#row" + y + " .col" + x).text() != ""){
     x = Math.floor(Math.random() * cols);
     y = Math.floor(Math.random() * rows);
   }
@@ -96,15 +124,27 @@ function boardSetup(rows, cols, maze) {
 function drawWalls(y, x, maze) {
   if(maze[y][x].northWall){
     $("#row" + y + " .col" + x).css("border-top", "2px solid white");
+    if(y > 0){
+      $("#row" + (y-1) + " .col" + x).css("border-bottom", "2px solid white");
+    }
   }
   if(maze[y][x].southWall){
     $("#row" + y + " .col" + x).css("border-bottom", "2px solid white");
+    if(y < maze.length-1){
+      $("#row" + (y+1) + " .col" + x).css("border-top", "2px solid white");
+    }
   }
   if(maze[y][x].westWall){
     $("#row" + y + " .col" + x).css("border-left", "2px solid white");
+    if(x > 0){
+      $("#row" + y + " .col" + (x-1)).css("border-right", "2px solid white");
+    }
   }
   if(maze[y][x].eastWall){
     $("#row" + y + " .col" + x).css("border-right", "2px solid white");
+    if(x < maze[0].length){
+      $("#row" + y + " .col" + (x+1)).css("border-left", "2px solid white");
+    }
   }
 }
 
@@ -160,6 +200,7 @@ function lookEast(y, x, maze) {
 //Reveals where you've been
 function reveal(y, x, maze){
   $("#row" + y + " .col" + x).removeClass("tile");
+  drawWalls(y, x, maze);
   lookNorth(y, x, maze);
   lookSouth(y, x, maze);
   lookWest(y, x, maze);
@@ -231,7 +272,8 @@ function makeMaze(rows, cols) {
       maze[i][j] = {
         yIndex: i,
         xIndex: j,
-        material: "floor",
+        items: [],
+        monsters: [false, monster = {}],
         visited: false,
         northWall: true,
         eastWall: true,
