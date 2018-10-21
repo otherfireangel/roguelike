@@ -6,57 +6,25 @@ $(document).ready(function() {
     4: 100,
     5: 150
   };
-  var rows = 20;
-  var cols = 20;
-  var init_hp = 10;
-  var init_exp = 0;
-  var you = initChar(init_hp, init_exp, LV_EXP);
-  var maze = makeMaze(rows, cols);
+  let rows = 20;
+  let cols = 20;
+  let init_hp = 10;
+  let init_exp = 0;
+  let you = initChar(init_hp, init_exp, LV_EXP);
+  let maze = makeMaze(rows, cols);
   you.loc = boardSetup(rows, cols, maze);
   $("#game-map").one("click", function (){
     $(document).on("keyup", function(event){
-      var key = event.which;
-      you.loc = move(rows, cols, maze, key, you.loc);
+      let key = event.which;
+      you = move(rows, cols, maze, key, you, LV_EXP);
       reveal(you.loc[0], you.loc[1], maze);
-      if(maze[you.loc[0]][you.loc[1]].items.includes("potion")) {
-        you.hp += Math.floor(Math.random() * 1) + 1;
-        if(you.hp > 10){
-          you.hp = 10;
-        }
-        statUpdate(you, LV_EXP);
-        let index = maze[you.loc[0]][you.loc[1]].items.indexOf("potion");
-        maze[you.loc[0]][you.loc[1]].items.splice(index, 1);
-      }
-      if(maze[you.loc[0]][you.loc[1]].monsters[0]) {
-        you.hp -= Math.floor(Math.random() * 3) + 1;
-        maze[you.loc[0]][you.loc[1]].monsters[0] = false;
-        if(you.hp <= 0){
-          you.hp = 0;
-          $("#row0 .col0").text("G").css("color", "white");
-          $("#row0 .col1").text("A").css("color", "white");
-          $("#row0 .col2").text("M").css("color", "white");
-          $("#row0 .col3").text("E").css("color", "white");
-          $("#row0 .col4").text("");
-          $("#row0 .col5").text("O").css("color", "white");
-          $("#row0 .col6").text("V").css("color", "white");
-          $("#row0 .col7").text("E").css("color", "white");
-          $("#row0 .col8").text("R").css("color", "white");
-          for(let i = 0; i < maze.length; i++){
-            for(let j = 0; j < maze[0].length; j++){
-              $("#row" + i + " .col" + j).addClass("tile").css("border", "none");
-            }
-          }
-        }
-        statUpdate(you, LV_EXP);
-        //Update this to do battle
-      }
     });
   });
 });
 
 //Makes the character object and gives it starting HP and EXP
 function initChar(init_hp, init_exp, LV_EXP) {
-  var char = {
+  let char = {
     hp: init_hp,
     exp: init_exp,
     lv: 0,
@@ -70,20 +38,23 @@ function initChar(init_hp, init_exp, LV_EXP) {
 //Updates the stats of the character based on what just happened
 function statUpdate(char, LV_EXP) {
   $("#health").text(" " + char.hp);
+  if((LV_EXP[char.lv + 1] - char.exp) == 0){
+    char.lv += 1;
+  }
   $("#level").text(" " + char.lv);
   $("#to-level").text(" " + (LV_EXP[char.lv + 1] - char.exp));
 }
 
 //makes rows and columns of empty divs and sets the border of the divs to match the walls
 function boardSetup(rows, cols, maze) {
-  for (var i = 0; i < rows; i++){
+  for (let i = 0; i < rows; i++){
     $("#game-map").append("<div class='row' id='row" + i + "'></div>");
-    for (var j = 0; j < cols; j++){
+    for (let j = 0; j < cols; j++){
       $("#row" + i).append("<div class='tile column col" + j + "'></div>")
     }
   }
   //puts spikes in 10 random divs
-  for(var a = 0; a < 10; a++) {
+  for(let a = 0; a < 10; a++) {
     x2 = Math.floor(Math.random() * cols);
     y2 = Math.floor(Math.random() * rows);
     while($("#row" + y2 + " .col" + x2).text() != ""){
@@ -94,11 +65,11 @@ function boardSetup(rows, cols, maze) {
     maze[y2][x2].monsters[0] = "true";
     maze[y2][x2].monsters[1].loc = [y2, x2];
     maze[y2][x2].monsters[1].hp = 5;
-    maze[y2][x2].monsters[1].exp = 2;
-    maze[y2][x2].monsters[1].dmg = 3;
+    maze[y2][x2].monsters[1].exp = 5;
+    maze[y2][x2].monsters[1].dmg = 2;
   }
   //puts potions in 10 random divs
-  for(var b = 0; b < 10; b++) {
+  for(let b = 0; b < 10; b++) {
     x3 = Math.floor(Math.random() * cols);
     y3 = Math.floor(Math.random() * rows);
     while($("#row" + y3 + " .col" + x3).text() != ""){
@@ -208,67 +179,139 @@ function reveal(y, x, maze){
 }
 
 //Calculates if you can move and if so, moves you
-function move(rows, cols, maze, key, loc) {
-  var borderLeft = maze[loc[0]][loc[1]].westWall;
-  var borderRight = maze[loc[0]][loc[1]].eastWall;
-  var borderTop = maze[loc[0]][loc[1]].northWall;
-  var borderBottom = maze[loc[0]][loc[1]].southWall;
+function move(rows, cols, maze, key, you, LV_EXP) {
+  let dir = "";
+  let borderLeft = maze[you.loc[0]][you.loc[1]].westWall;
+  let borderRight = maze[you.loc[0]][you.loc[1]].eastWall;
+  let borderTop = maze[you.loc[0]][you.loc[1]].northWall;
+  let borderBottom = maze[you.loc[0]][you.loc[1]].southWall;
   if(key == 37){
-    if(loc[1] == 0){
+    if(you.loc[1] == 0){
 
     }else if(borderLeft){
 
     }else{
-      $(".char").text("").removeClass("char").addClass("temp");
-      $(".temp").prev().text("@").addClass("char");
-      $(".temp").removeClass("temp");
-      loc[1] --;
+      you.loc[1] --;
+      if(maze[you.loc[0]][you.loc[1]].monsters[0]){
+        you = fight(maze, you, LV_EXP, key);
+      }else{
+        $(".char").text("").removeClass("char").addClass("temp");
+        $(".temp").prev().text("@").addClass("char");
+        $(".temp").removeClass("temp");
+      }
     }
   }else if(key == 38){
-    if(loc[0] == 0){
+    if(you.loc[0] == 0){
 
     }else if(borderTop){
 
     }else{
-      $(".char").text("").removeClass("char").addClass("temp");
-      $(".temp").parent().prev().children(".col" + loc[1]).text("@").addClass("char");
-      $(".temp").removeClass("temp");
-      loc[0] --;
+      you.loc[0] --;
+      if(maze[you.loc[0]][you.loc[1]].monsters[0]){
+        you = fight(maze, you, LV_EXP, key);
+      }else{
+        $(".char").text("").removeClass("char").addClass("temp");
+        $(".temp").parent().prev().children(".col" + you.loc[1]).text("@").addClass("char");
+        $(".temp").removeClass("temp");
+      }
     }
   }else if(key == 39){
-    if(loc[1] == cols-1){
+    if(you.loc[1] == cols-1){
 
     }else if(borderRight){
 
     }else{
-      $(".char").text("").removeClass("char").addClass("temp");
-      $(".temp").next().text("@").addClass("char");
-      $(".temp").removeClass("temp");
-      loc[1] ++;
+      you.loc[1] ++;
+      if(maze[you.loc[0]][you.loc[1]].monsters[0]){
+        you = fight(maze, you, LV_EXP, key);
+      }else{
+        $(".char").text("").removeClass("char").addClass("temp");
+        $(".temp").next().text("@").addClass("char");
+        $(".temp").removeClass("temp");
+      }
     }
   }else if(key == 40){
-    if(loc[0] == rows-1){
+    if(you.loc[0] == rows-1){
 
     }else if(borderBottom){
 
     }else{
-      $(".char").text("").removeClass("char").addClass("temp");
-      $(".temp").parent().next().children(".col" + loc[1]).text("@").addClass("char");
-      $(".temp").removeClass("temp");
-      loc[0] ++;
+      you.loc[0] ++;
+      if(maze[you.loc[0]][you.loc[1]].monsters[0]){
+        you = fight(maze, you, LV_EXP, key);
+      }else{
+        $(".char").text("").removeClass("char").addClass("temp");
+        $(".temp").parent().next().children(".col" + you.loc[1]).text("@").addClass("char");
+        $(".temp").removeClass("temp");
+      }
     }
   }else{
 
   }
-  return loc;
+
+  if(maze[you.loc[0]][you.loc[1]].items.includes("potion")) {
+    you.hp += Math.floor(Math.random() * 1) + 1;
+    if(you.hp > 10){
+      you.hp = 10;
+    }
+    statUpdate(you, LV_EXP);
+    let index = maze[you.loc[0]][you.loc[1]].items.indexOf("potion");
+    maze[you.loc[0]][you.loc[1]].items.splice(index, 1);
+  }
+  return you;
+}
+
+//Fights monsters
+function fight(maze, you, LV_EXP, key) {
+  thisMonster = maze[you.loc[0]][you.loc[1]].monsters[1];
+  you.hp -= Math.floor(Math.random() * 3) + 1;
+  thisMonster.hp -= Math.floor(Math.random() * you.dmg) + 1;
+  if(thisMonster.hp <= 0){
+    maze[you.loc[0]][you.loc[1]].monsters[0] = false;
+    $("#row" + you.loc[0] + " .col" + you.loc[1]).text("");
+    you.exp += thisMonster.exp;
+  }
+  if(you.hp <= 0){
+    you.hp = 0;
+    $("#row0 .col0").text("G").css("color", "white");
+    $("#row0 .col1").text("A").css("color", "white");
+    $("#row0 .col2").text("M").css("color", "white");
+    $("#row0 .col3").text("E").css("color", "white");
+    $("#row0 .col4").text("");
+    $("#row0 .col5").text("O").css("color", "white");
+    $("#row0 .col6").text("V").css("color", "white");
+    $("#row0 .col7").text("E").css("color", "white");
+    $("#row0 .col8").text("R").css("color", "white");
+    for(let i = 0; i < maze.length; i++){
+      for(let j = 0; j < maze[0].length; j++){
+        $("#row" + i + " .col" + j).addClass("tile").css("border", "none");
+      }
+    }
+  }
+  switch(key){
+    case 37:
+      you.loc[1]++;
+      break;
+    case 39:
+      you.loc[1]--;
+      break;
+    case 38:
+      you.loc[0]++;
+      break;
+    case 40:
+      you.loc[0]--;
+      break;
+  }
+  statUpdate(you, LV_EXP);
+  return you;
 }
 
 //Makes a maze in a 2d array and returns that
 function makeMaze(rows, cols) {
-  var maze = [];
-  for(var i = 0; i < rows; i++){
+  let maze = [];
+  for(let i = 0; i < rows; i++){
     maze[i] = [];
-    for(var j = 0; j < cols; j++){
+    for(let j = 0; j < cols; j++){
       maze[i][j] = {
         yIndex: i,
         xIndex: j,
@@ -283,9 +326,9 @@ function makeMaze(rows, cols) {
     }
   }
   drawRooms(maze, rows, cols);
-  var startPoint = maze[Math.floor(Math.random() * rows)][Math.floor(Math.random() * cols)];
-  var endPoint = maze[Math.floor(Math.random() * rows)][Math.floor(Math.random() * cols)];
-  var path = [];
+  let startPoint = maze[Math.floor(Math.random() * rows)][Math.floor(Math.random() * cols)];
+  let endPoint = maze[Math.floor(Math.random() * rows)][Math.floor(Math.random() * cols)];
+  let path = [];
   current = startPoint;
   current.visited = true;
   options = checkNeighbors(maze, current, rows, cols);
@@ -297,8 +340,8 @@ function makeMaze(rows, cols) {
 
 //Makes sure that all walls exist from both sides
 function fixWalls(maze) {
-  for(var y = 0; y < maze.length; y++) {
-    for(var x = 0; x < maze[y].length; x++) {
+  for(let y = 0; y < maze.length; y++) {
+    for(let x = 0; x < maze[y].length; x++) {
       //makes the top/bottom edges solid and fixes north/south walls
       if(y == 0){
         maze[y][x].northWall = true;
@@ -329,8 +372,8 @@ function fixWalls(maze) {
 
 //Checks the neighboring cells and returns unvisited ones
 function checkNeighbors(maze, current, rows, cols){
-  var x = current.xIndex;
-  var y = current.yIndex;
+  let x = current.xIndex;
+  let y = current.yIndex;
   options = []
   if(y > 0 && maze[y-1][x].visited == false){
     options.push([y-1,x,"N"]);
@@ -400,16 +443,16 @@ function step(maze, path, current, endPoint, rows, cols){
 //takes the empty maze and creates rectangular rooms
 function drawRooms(maze, rows, cols) {
   //size of rooms as a function of maze size (range)
-  var roomMaxX = cols / 5;
-  var roomMaxY = rows / 5;
-  var numRooms = 10;
+  let roomMaxX = cols / 5;
+  let roomMaxY = rows / 5;
+  let numRooms = 10;
   while(numRooms > 0) {
-    var roomX = Math.floor(Math.random() * roomMaxX-1) + 2;
-    var roomY = Math.floor(Math.random() * roomMaxY-1) + 2;
-    var locX = Math.floor(Math.random() * ((maze[0].length - roomX) + 1));
-    var locY = Math.floor(Math.random() * ((maze.length - roomY) + 1));
-    for(var y = locY; y < (locY + roomY); y ++) {
-      for(var x = locX; x < (locX + roomX); x++) {
+    let roomX = Math.floor(Math.random() * roomMaxX-1) + 2;
+    let roomY = Math.floor(Math.random() * roomMaxY-1) + 2;
+    let locX = Math.floor(Math.random() * ((maze[0].length - roomX) + 1));
+    let locY = Math.floor(Math.random() * ((maze.length - roomY) + 1));
+    for(let y = locY; y < (locY + roomY); y ++) {
+      for(let x = locX; x < (locX + roomX); x++) {
         if(y == locY){
           maze[y][x].southWall = false;
         }else if(y == locY + roomY){
