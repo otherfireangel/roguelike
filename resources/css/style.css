@@ -45,6 +45,7 @@ p{
   display: inline;
   padding-left: .5rem;
   font-size: .75rem;
+  color: white;
 }
 
 #hud {
@@ -66,7 +67,8 @@ p{
 }
 
 .column {
-  background-color: rgba(255,255,255,.5);
+  background-color: rgba(255,255,255,.25);
+  color: rgba(255,255,255,.5);
   border-top: 2px solid #16455D;
   border-bottom: 2px solid #16455D;
   border-left: 2px solid #16455D;
@@ -79,9 +81,14 @@ p{
   justify-content: center;
 }
 
-.tile {
+.never-seen {
   color: #16455D;
   background-color: #16455D;
+}
+
+.currently-seen {
+  color: white;
+  background-color: rgba(255,255,255,.5);
 }
 
 .stat {
